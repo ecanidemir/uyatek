@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sürdürülebilirlik Raporlama Formu v9</title>
+    <title>Sürdürülebilirlik Raporlama Formu v10</title>
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -14,31 +14,44 @@
             --border-color: #dee2e6;
             --child-bg: #fffcf0;
             --child-border: #ffb74d;
-            --sidebar-width: 360px;
+            --sidebar-width: 340px;
         }
 
         body { font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; background-color: #f4f6f8; overflow: hidden; }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+        
+        /* --- MOBİL ÜST BAR --- */
+        .mobile-header {
+            display: none; position: fixed; top: 0; left: 0; right: 0; height: 60px;
+            background: var(--primary-color); color: white; align-items: center;
+            padding: 0 15px; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .menu-toggle {
+            background: none; border: none; color: white; font-size: 24px; cursor: pointer; margin-right: 15px;
+        }
 
-        /* MODAL */
-        #sector-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(44, 62, 80, 0.98); z-index: 9999; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(5px); transition: opacity 0.5s ease; }
-        .modal-content { background: white; padding: 40px; border-radius: 16px; width: 450px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
-        .sector-select { width: 100%; padding: 15px; border: 2px solid var(--border-color); border-radius: 8px; margin-bottom: 25px; outline: none; cursor: pointer; }
-        .start-btn { background: var(--secondary-color); color: white; border: none; padding: 15px 30px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; }
-        .start-btn:disabled { background: #ccc; cursor: not-allowed; }
-        .modal-load-btn { margin-top: 15px; background: transparent; color: #888; border: 1px dashed #ccc; padding: 10px; width: 100%; border-radius: 8px; cursor: pointer; }
+        /* --- SIDEBAR --- */
+        .sidebar { 
+            width: var(--sidebar-width); background: white; border-right: 1px solid var(--border-color); 
+            display: flex; flex-direction: column; flex-shrink: 0; transition: transform 0.3s ease;
+            z-index: 1001;
+        }
+        
+        @media (max-width: 992px) {
+            .sidebar { position: fixed; top: 0; left: 0; bottom: 0; transform: translateX(-100%); width: 280px; }
+            .sidebar.open { transform: translateX(0); }
+            .mobile-header { display: flex; }
+            .main-content { padding-top: 70px !important; padding-left: 15px !important; padding-right: 15px !important; }
+            .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; }
+            .sidebar-overlay.active { display: block; }
+        }
 
-        /* SIDEBAR */
-        .sidebar { width: var(--sidebar-width); background: white; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; flex-shrink: 0; z-index: 100; box-shadow: 2px 0 5px rgba(0,0,0,0.05); }
         .framework-selector { display: flex; padding: 10px; gap: 5px; border-bottom: 1px solid #eee; background: #fff; }
-        .fw-btn { flex: 1; padding: 8px; border: 1px solid var(--border-color); background: #f8f9fa; color: #666; cursor: pointer; border-radius: 4px; font-size: 0.8rem; font-weight: 600; transition: all 0.2s; }
+        .fw-btn { flex: 1; padding: 10px 5px; border: 1px solid var(--border-color); background: #f8f9fa; color: #666; cursor: pointer; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
         .fw-btn.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
         .fw-btn#btn-metrics.active { background: var(--accent-color); border-color: var(--accent-color); }
-        
+
         .actions-panel { padding: 10px; border-bottom: 1px solid #eee; display: flex; gap: 5px; background: #fafafa; }
-        .action-btn { flex: 1; border: none; padding: 8px; border-radius: 4px; color: white; font-size: 0.8rem; cursor: pointer; font-weight: 600; display: flex; justify-content: center; align-items: center; gap: 5px; }
+        .action-btn { flex: 1; border: none; padding: 8px; border-radius: 4px; color: white; font-size: 0.8rem; cursor: pointer; font-weight: 600; }
         .btn-save { background-color: var(--success-color); }
         .btn-load { background-color: #8e44ad; }
 
@@ -46,63 +59,64 @@
         .sidebar-header h2 { margin: 0; font-size: 1rem; color: var(--primary-color); }
         .active-sector-badge { font-size: 0.7rem; color: white; background: var(--secondary-color); padding: 3px 6px; border-radius: 4px; display: inline-block; margin-top: 5px; }
 
-        /* MENU */
         #sidebar-menu-items { flex: 1; overflow-y: auto; padding-bottom: 20px; }
         .nav-group { border-bottom: 1px solid #f0f0f0; }
-        .nav-main-item { padding: 12px 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: #fff; font-weight: 700; color: var(--primary-color); font-size: 0.9rem; transition: background 0.2s; user-select: none; }
-        .nav-main-item:hover { background: #f4f6f8; }
-        .nav-main-item.active-metric { background: #fff3e0; color: var(--accent-color); border-left: 4px solid var(--accent-color); }
-        .nav-sub-items { display: block; background: #fbfbfb; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); overflow: hidden; transition: max-height 0.3s ease-out; }
-        .nav-group.collapsed .nav-sub-items { display: none; }
-        .nav-main-item.has-children::after { content: '▼'; font-size: 0.7rem; color: #aaa; transition: transform 0.3s; }
-        .nav-group.collapsed .nav-main-item.has-children::after { transform: rotate(-90deg); }
-        .nav-sub-item { padding: 10px 15px 10px 30px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; color: #666; font-size: 0.85rem; border-left: 4px solid transparent; transition: all 0.2s; }
-        .nav-sub-item:hover { background: #f1f1f1; color: var(--secondary-color); }
+        .nav-main-item { padding: 12px 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: #fff; font-weight: 700; color: var(--primary-color); font-size: 0.9rem; }
+        .nav-main-item.completed { background-color: #e8f5e9; color: #2e7d32; }
+        .nav-sub-item { padding: 8px 15px 8px 30px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; color: #666; font-size: 0.85rem; border-left: 3px solid transparent; }
         .nav-sub-item.active { background: #e3f2fd; color: var(--secondary-color); border-left-color: var(--secondary-color); font-weight: 600; }
-        .badge { font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; background: #eee; color: #777; min-width: 20px; text-align: center; }
+        .nav-sub-item.completed { color: var(--success-color); }
+        .badge { font-size: 0.7rem; padding: 2px 6px; border-radius: 10px; background: #eee; color: #777; min-width: 20px; text-align: center; }
         .completed .badge { background: var(--success-color); color: white; }
-        .completed .badge::after { content: ' ✔'; }
 
-        /* MAIN CONTENT */
+        /* --- MAIN CONTENT --- */
         .main-content { flex: 1; padding: 40px; overflow-y: auto; position: relative; scroll-behavior: smooth; }
-        .content-section { display: none; max-width: 900px; margin: 0 auto; animation: fadeIn 0.3s ease; }
-        .content-section.active-view { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        .section-header { font-size: 1.6rem; color: var(--primary-color); margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid var(--border-color); display: flex; align-items: center; gap: 10px; }
-        .section-header.metric-header { color: var(--accent-color); border-color: #ffe0b2; }
+        .form-container { max-width: 900px; margin: 0 auto 50px auto; }
+        .main-section-header { margin-top: 40px; padding-bottom: 10px; border-bottom: 3px solid var(--primary-color); color: var(--primary-color); font-size: 1.6rem; font-weight: 800; }
+        .sub-section-container { margin-top: 25px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .sub-section-header { font-size: 1.2rem; color: var(--secondary-color); margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #eee; }
 
-        /* SORU KARTLARI */
-        .question-group { margin-bottom: 25px; padding: 25px; border: 1px solid #eee; border-radius: 8px; background: #fff; transition: border 0.2s; }
-        .question-group:hover { border-color: #ccc; }
+        .question-group { margin-bottom: 20px; padding: 20px; border: 1px solid #eee; border-radius: 8px; background: #fff; }
         .question-group.hidden { display: none; }
         .question-group.is-child { background-color: var(--child-bg); border-left: 5px solid var(--child-border); }
+
+        label { display: block; font-weight: 600; margin-bottom: 8px; color: #333; font-size: 1rem; line-height: 1.4; }
+        .q-id-badge { font-weight: normal; font-size: 0.75rem; color: #999; background: #f0f0f0; padding: 2px 5px; border-radius: 4px; margin-left: 5px; }
+        .description { font-size: 0.9rem; color: #666; margin-bottom: 12px; background: #fafafa; padding: 8px; border-radius: 4px; line-height: 1.5; }
         
-        label { display: block; font-weight: 600; margin-bottom: 10px; color: #333; font-size: 1rem; }
-        .description { font-size: 0.9rem; color: #666; margin-bottom: 15px; background: #fafafa; padding: 10px; border-radius: 6px; line-height: 1.5; border-left: 3px solid #eee; }
-        input, select, textarea { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 6px; box-sizing: border-box; font-family: inherit; font-size: 1rem; }
-        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--secondary-color); box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1); }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; box-sizing: border-box; font-family: inherit; font-size: 0.95rem; }
         .checkbox-group { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
-        .checkbox-item { display: flex; align-items: center; cursor: pointer; padding: 5px; border-radius: 4px; }
-        .checkbox-item:hover { background: #f8f9fa; }
-        .checkbox-item input { width: 18px; height: 18px; margin-right: 10px; accent-color: var(--secondary-color); }
-        .q-badge { background: #eee; color: #888; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; margin-left: 8px; font-weight: normal; }
+        .checkbox-item { display: flex; align-items: center; cursor: pointer; font-size: 0.9rem; }
+        .checkbox-item input { width: 18px; height: 18px; margin-right: 8px; }
+
+        /* --- MODAL --- */
+        #sector-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(44, 62, 80, 0.98); z-index: 9999; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .modal-content { background: white; padding: 30px; border-radius: 16px; width: 100%; max-width: 450px; text-align: center; }
+        .sector-select { width: 100%; padding: 15px; border-radius: 8px; border: 2px solid #dee2e6; margin-bottom: 20px; }
     </style>
 </head>
 <body>
+
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <div class="mobile-header">
+        <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+        <div style="font-weight: bold; font-size: 0.9rem;">Sürdürülebilirlik Formu</div>
+    </div>
 
     <input type="file" id="jsonFileInput" accept=".json" style="display: none;" onchange="handleFileLoad(event)">
 
     <div id="sector-modal">
         <div class="modal-content">
             <h2>Hoş Geldiniz</h2>
-            <p>Raporlama sürecine başlamadan önce lütfen firmanızın ana sektörünü seçiniz.</p>
+            <p>Devam etmek için firmanızın ana sektörünü seçiniz.</p>
             <select id="sectorSelect" class="sector-select"><option value="">Yükleniyor...</option></select>
-            <button id="startBtn" class="start-btn" onclick="startApplication()" disabled>BAŞLA</button>
-            <button class="modal-load-btn" onclick="document.getElementById('jsonFileInput').click()">📂 Kayıtlı Dosya Yükle</button>
+            <button id="startBtn" class="start-btn" onclick="startApplication()" disabled style="width:100%; padding:15px; background:var(--secondary-color); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">BAŞLA</button>
+            <button class="modal-load-btn" onclick="document.getElementById('jsonFileInput').click()" style="width:100%; margin-top:10px; background:none; border:1px dashed #ccc; padding:10px; color:#666; cursor:pointer;">📂 Taslak Yükle</button>
         </div>
     </div>
 
-    <div class="sidebar">
+    <div class="sidebar" id="sidebar">
         <div class="framework-selector">
             <button id="btn-tsrs" class="fw-btn active" onclick="switchFramework('tsrs')">TSRS</button>
             <button id="btn-gri" class="fw-btn" onclick="switchFramework('gri')">GRI</button>
@@ -120,549 +134,186 @@
     </div>
 
     <div class="main-content" id="mainContent">
-        <div style="text-align:center; color:#888; margin-top:50px;">Lütfen sektör seçimi yapınız...</div>
+        <div style="text-align:center; color:#888; margin-top:50px;">Lütfen sektör seçiniz...</div>
     </div>
 
     <script>
-        // ==========================================
-        // 1. AYARLAR & API
-        // ==========================================
         const API_URL = "https://script.google.com/macros/s/AKfycbzzYVodLj9QirWGkyXaHbpxVjZjDxSXl7anG1mW9HpvYMLlQfIbiHfn4F7WYLAr0Dkn/exec";
+        const tsrsOrder = ["Genel Hükümler Ve Bilgiler", "Yönetişim (Governance)", "Strateji (Strategy)", "Risk Yönetimi (Risk Management)", "Metrikler Ve Hedefler (Metrics & Targets)"];
 
-        const tsrsOrder = [
-            "Genel Hükümler Ve Bilgiler",
-            "Yönetişim (Governance)",
-            "Strateji (Strategy)",
-            "Risk Yönetimi (Risk Management)",
-            "Metrikler Ve Hedefler (Metrics & Targets)"
-        ];
+        let allQuestions = [], filteredQuestions = [], groupedData = {}, questionMap = {}, dependencies = {};
+        let currentFramework = 'tsrs', userSector = null;
 
-        // ==========================================
-        // 2. GLOBAL DEĞİŞKENLER
-        // ==========================================
-        let allQuestions = [];
-        let filteredQuestions = [];
-        let groupedData = {}; 
-        let questionMap = {};
-        let dependencies = {};
-        
-        let currentFramework = 'tsrs';
-        let userSector = null;
-        let debounceTimer;
-
-        // UI Elementleri
-        const sectorSelect = document.getElementById('sectorSelect');
-        const startBtn = document.getElementById('startBtn');
-        const modal = document.getElementById('sector-modal');
-        const activeSectorDisplay = document.getElementById('active-sector-display');
-        const mainContent = document.getElementById('mainContent');
-        const sidebarMenuItems = document.getElementById('sidebar-menu-items');
-        const menuTitle = document.getElementById('menu-title');
-
-        // ==========================================
-        // 3. BAŞLANGIÇ
-        // ==========================================
-        document.addEventListener('DOMContentLoaded', () => {
-            fetch(API_URL)
-                .then(res => res.json())
-                .then(data => {
-                    allQuestions = data;
-                    initSectorSelection();
-                })
-                .catch(err => {
-                    console.error(err);
-                    alert("Veri çekilemedi!");
-                });
-        });
-
-        function initSectorSelection() {
-            const sectors = new Set();
-            allQuestions.forEach(q => {
-                const arr = q.firma_sektor;
-                if (Array.isArray(arr) && arr.length > 0) {
-                    arr.forEach(s => {
-                        if (s && s !== "GENEL" && s.trim() !== "") sectors.add(s.trim());
-                    });
-                }
-            });
-            const sorted = Array.from(sectors).sort();
-            sectorSelect.innerHTML = '<option value="">Lütfen Sektör Seçiniz...</option>';
-            sorted.forEach(s => {
-                const opt = document.createElement('option');
-                opt.value = s;
-                opt.textContent = s;
-                sectorSelect.appendChild(opt);
-            });
-            sectorSelect.addEventListener('change', () => startBtn.disabled = (sectorSelect.value === ""));
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.getElementById('sidebarOverlay').classList.toggle('active');
         }
 
-        // ==========================================
-        // 4. UYGULAMA MANTIĞI
-        // ==========================================
-        function startApplication() {
-            userSector = sectorSelect.value;
-            if (!userSector) return;
-
-            modal.style.opacity = '0';
-            setTimeout(() => { modal.style.display = 'none'; }, 500);
-
-            activeSectorDisplay.textContent = userSector;
-            activeSectorDisplay.style.display = 'inline-block';
-
-            filteredQuestions = allQuestions.filter(q => {
-                const arr = q.firma_sektor;
-                const isEmpty = !arr || arr.length === 0 || (arr.length === 1 && arr[0] === "");
-                if (isEmpty) return true; 
-                return arr.includes("GENEL") || arr.includes(userSector);
+        document.addEventListener('DOMContentLoaded', () => {
+            fetch(API_URL).then(res => res.json()).then(data => {
+                allQuestions = data;
+                const sectors = new Set();
+                allQuestions.forEach(q => { if(q.firma_sektor) q.firma_sektor.forEach(s => { if(s && s !== "GENEL") sectors.add(s.trim()); })});
+                const sel = document.getElementById('sectorSelect');
+                Array.from(sectors).sort().forEach(s => { let o = document.createElement('option'); o.value = o.text = s; sel.add(o); });
+                sel.onchange = () => document.getElementById('startBtn').disabled = !sel.value;
             });
+        });
 
+        function startApplication() {
+            userSector = document.getElementById('sectorSelect').value;
+            document.getElementById('sector-modal').style.display = 'none';
+            document.getElementById('active-sector-display').textContent = userSector;
+            document.getElementById('active-sector-display').style.display = 'inline-block';
+            filteredQuestions = allQuestions.filter(q => q.firma_sektor.includes("GENEL") || q.firma_sektor.includes(userSector));
             processData();
         }
 
         function switchFramework(mode) {
-            if (currentFramework === mode) return;
             currentFramework = mode;
-            updateFrameworkUI();
-            processData();
-        }
-
-        function updateFrameworkUI() {
             document.querySelectorAll('.fw-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('btn-' + currentFramework).classList.add('active');
-
-            if (currentFramework === 'tsrs') menuTitle.textContent = "TSRS Başlıkları";
-            else if (currentFramework === 'gri') menuTitle.textContent = "GRI Başlıkları";
-            else menuTitle.textContent = "Metrik Kategorileri";
+            document.getElementById('btn-' + mode).classList.add('active');
+            document.getElementById('menu-title').textContent = mode.toUpperCase() + " Başlıkları";
+            processData();
+            if(window.innerWidth < 992) toggleSidebar();
         }
 
         function processData() {
-            groupedData = {};
-            questionMap = {};
-            dependencies = {};
-
+            groupedData = {}; questionMap = {}; dependencies = {};
             filteredQuestions.forEach(q => {
                 questionMap[q.id] = q;
-
-                if (q.baglilik && q.baglilik.parent_id) {
-                    const pid = q.baglilik.parent_id;
-                    if (!dependencies[pid]) dependencies[pid] = [];
-                    if (!dependencies[pid].includes(q.id)) dependencies[pid].push(q.id);
+                if (q.baglilik?.parent_id) {
+                    let pid = q.baglilik.parent_id;
+                    if(!dependencies[pid]) dependencies[pid] = [];
+                    dependencies[pid].push(q.id);
                 }
-
-                let main = "", sub = "";
-                if (currentFramework === 'tsrs') {
-                    main = q.konumlandirma?.tsrs?.main;
-                    sub = q.konumlandirma?.tsrs?.sub;
-                } else if (currentFramework === 'gri') {
-                    main = q.konumlandirma?.gri?.main;
-                    sub = q.konumlandirma?.gri?.sub;
-                } else if (currentFramework === 'metrics') {
-                    if (q.metrik_kategori && q.metrik_kategori.trim() !== "") {
-                        main = q.metrik_kategori;
-                        sub = "_dummy_";
-                    } else return;
-                }
-
-                if (!main) return;
-                if (!sub) sub = "Genel";
-
-                if (!groupedData[main]) groupedData[main] = {};
-                if (!groupedData[main][sub]) groupedData[main][sub] = [];
-                groupedData[main][sub].push(q);
+                let m = (currentFramework==='tsrs')?q.konumlandirma?.tsrs?.main:(currentFramework==='gri')?q.konumlandirma?.gri?.main:q.metrik_kategori;
+                let s = (currentFramework==='tsrs')?q.konumlandirma?.tsrs?.sub:(currentFramework==='gri')?q.konumlandirma?.gri?.sub:"Genel";
+                if(!m) return;
+                if(!groupedData[m]) groupedData[m] = {};
+                if(!groupedData[m][s]) groupedData[m][s] = [];
+                groupedData[m][s].push(q);
             });
-
-            renderAll();
+            renderUI();
         }
 
-        function getSortedMainKeys() {
-            let keys = Object.keys(groupedData);
-            if (currentFramework === 'tsrs') {
-                keys.sort((a, b) => {
-                    let iA = tsrsOrder.indexOf(a), iB = tsrsOrder.indexOf(b);
-                    if (iA === -1) iA = 999; if (iB === -1) iB = 999;
-                    return (iA === 999 && iB === 999) ? a.localeCompare(b) : iA - iB;
+        function renderUI() {
+            const mainContent = document.getElementById('mainContent');
+            const menu = document.getElementById('sidebar-menu-items');
+            mainContent.innerHTML = ''; menu.innerHTML = '';
+
+            let keys = Object.keys(groupedData).sort((a,b) => {
+                let iA = tsrsOrder.indexOf(a), iB = tsrsOrder.indexOf(b);
+                return (iA===-1?999:iA) - (iB===-1?999:iB);
+            });
+
+            keys.forEach((mK, mIdx) => {
+                let g = document.createElement('div'); g.className = 'nav-group';
+                let mi = document.createElement('div'); mi.className = 'nav-main-item'; mi.id = 'nav-main-'+mIdx;
+                mi.innerHTML = `<span>${mK}</span><span class="badge" id="b-m-${mIdx}">0/0</span>`;
+                mi.onclick = () => document.getElementById('s-m-'+mIdx).scrollIntoView();
+                g.appendChild(mi);
+
+                let sc = document.createElement('div'); sc.className = 'nav-sub-items';
+                Object.keys(groupedData[mK]).forEach((sK, sIdx) => {
+                    let si = document.createElement('div'); si.className = 'nav-sub-item'; si.id = `nav-sub-${mIdx}-${sIdx}`;
+                    si.innerHTML = `<span>${sK}</span><span class="badge" id="b-s-${mIdx}-${sIdx}">0/0</span>`;
+                    si.onclick = (e) => { e.stopPropagation(); document.getElementById(`s-s-${mIdx}-${sIdx}`).scrollIntoView(); if(window.innerWidth<992) toggleSidebar(); };
+                    sc.appendChild(si);
                 });
-            } else {
-                keys.sort((a, b) => a.localeCompare(b));
-            }
-            return keys;
-        }
+                g.appendChild(sc); menu.appendChild(g);
 
-        // ==========================================
-        // 5. RENDER (GÖRÜNTÜLEME)
-        // ==========================================
-        function renderAll() {
-            renderSidebar();
-            renderMainContent(); 
-            
-            // Eğer yüklenmesi beklenen veri varsa (Import işlemi), onu şimdi yükle
-            // Bu kısım startApplication'dan hemen sonra çalıştığı için
-            // renderAll içinde pendingRestoreData'yı kontrol etmek en güvenlisidir.
-            if (window.pendingRestoreData) {
-                restoreAnswers(window.pendingRestoreData);
-                window.pendingRestoreData = null; // İşlendikten sonra temizle
-            } else {
-                // Sadece yeni başlanıyorsa hesapla
-                updateProgress(true);
-            }
-
-            // İlk sayfayı aç
-            const mainKeys = getSortedMainKeys();
-            if (mainKeys.length > 0) {
-                if (currentFramework === 'metrics') {
-                    showSection(`section-${mainKeys[0]}`);
-                    const firstItem = document.getElementById(`nav-main-0`);
-                    if(firstItem) firstItem.classList.add('active-metric');
-                } else {
-                    const firstGroup = document.querySelector('.nav-group');
-                    if (firstGroup) firstGroup.classList.remove('collapsed');
-                    
-                    const subKeys = Object.keys(groupedData[mainKeys[0]]);
-                    if (subKeys.length > 0) {
-                        showSection(`section-${mainKeys[0]}-${subKeys[0]}`);
-                        const subItem = document.getElementById(`nav-sub-0-0`);
-                        if(subItem) subItem.classList.add('active');
-                    }
-                }
-            }
-        }
-
-        function showSection(sectionId) {
-            document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active-view'));
-            const target = document.getElementById(sectionId);
-            if(target) {
-                target.classList.add('active-view');
-                mainContent.scrollTop = 0;
-            }
-        }
-
-        function renderSidebar() {
-            sidebarMenuItems.innerHTML = '';
-            const mainKeys = getSortedMainKeys();
-            const isMetric = (currentFramework === 'metrics');
-
-            mainKeys.forEach((mainKey, mIdx) => {
-                const groupDiv = document.createElement('div');
-                groupDiv.className = 'nav-group collapsed';
-
-                const mainItem = document.createElement('div');
-                mainItem.className = 'nav-main-item';
-                if (!isMetric) mainItem.classList.add('has-children');
-                mainItem.id = `nav-main-${mIdx}`;
-                
-                mainItem.innerHTML = `
-                    <span class="title">${mainKey}</span>
-                    <span class="badge badge-main" id="badge-main-${mIdx}">0/0</span>
-                `;
-
-                if (isMetric) {
-                    mainItem.onclick = () => {
-                        document.querySelectorAll('.nav-main-item').forEach(e => e.classList.remove('active-metric'));
-                        mainItem.classList.add('active-metric');
-                        showSection(`section-${mainKey}`);
-                    };
-                } else {
-                    mainItem.onclick = () => {
-                        const isCollapsed = groupDiv.classList.contains('collapsed');
-                        document.querySelectorAll('.nav-group').forEach(g => g.classList.add('collapsed'));
-                        if(isCollapsed) groupDiv.classList.remove('collapsed');
-                        else groupDiv.classList.add('collapsed');
-                    };
-                }
-                groupDiv.appendChild(mainItem);
-
-                if (!isMetric) {
-                    const subContainer = document.createElement('div');
-                    subContainer.className = 'nav-sub-items';
-                    const subKeys = Object.keys(groupedData[mainKey]);
-                    subKeys.forEach((subKey, sIdx) => {
-                        const subItem = document.createElement('div');
-                        subItem.className = 'nav-sub-item';
-                        subItem.id = `nav-sub-${mIdx}-${sIdx}`;
-                        subItem.innerHTML = `<span>${subKey}</span><span class="badge" id="badge-sub-${mIdx}-${sIdx}">0/0</span>`;
-                        subItem.onclick = () => {
-                            document.querySelectorAll('.nav-sub-item').forEach(e => e.classList.remove('active'));
-                            subItem.classList.add('active');
-                            showSection(`section-${mainKey}-${subKey}`);
-                        };
-                        subContainer.appendChild(subItem);
-                    });
-                    groupDiv.appendChild(subContainer);
-                }
-                sidebarMenuItems.appendChild(groupDiv);
+                let mh = document.createElement('div'); mh.className = 'main-section-header'; mh.id = 's-m-'+mIdx; mh.textContent = mK;
+                mainContent.appendChild(mh);
+                Object.keys(groupedData[mK]).forEach((sK, sIdx) => {
+                    let sw = document.createElement('div'); sw.className = 'sub-section-container'; sw.id = `s-s-${mIdx}-${sIdx}`;
+                    sw.innerHTML = `<div class="sub-section-header">${sK}</div>`;
+                    groupedData[mK][sK].forEach(q => sw.appendChild(createQuestionElement(q)));
+                    mainContent.appendChild(sw);
+                });
             });
+            if(window.pRestore) { restoreAnswers(window.pRestore); window.pRestore = null; }
+            updateProgress();
         }
 
-        function renderMainContent() {
-            mainContent.innerHTML = '';
-            const mainKeys = getSortedMainKeys();
-            const isMetric = (currentFramework === 'metrics');
-
-            if (mainKeys.length === 0) {
-                mainContent.innerHTML = `<div style="text-align:center;color:#666;margin-top:50px;">Görüntülenecek soru bulunamadı.</div>`;
-                return;
-            }
-
-            mainKeys.forEach((mainKey, mIdx) => {
-                if (isMetric) {
-                    const sectionDiv = document.createElement('div');
-                    sectionDiv.className = 'content-section';
-                    sectionDiv.id = `section-${mainKey}`;
-
-                    const header = document.createElement('div');
-                    header.className = 'section-header metric-header';
-                    header.textContent = mainKey;
-                    sectionDiv.appendChild(header);
-
-                    if (groupedData[mainKey]["_dummy_"]) {
-                        groupedData[mainKey]["_dummy_"].forEach(q => sectionDiv.appendChild(createQuestionElement(q)));
-                    }
-                    mainContent.appendChild(sectionDiv);
-                } else {
-                    Object.keys(groupedData[mainKey]).forEach((subKey, sIdx) => {
-                        const sectionDiv = document.createElement('div');
-                        sectionDiv.className = 'content-section';
-                        sectionDiv.id = `section-${mainKey}-${subKey}`;
-
-                        const header = document.createElement('div');
-                        header.className = 'section-header';
-                        header.innerHTML = `<span>${mainKey} <small style="color:#999;font-size:0.8em;">/ ${subKey}</small></span>`;
-                        sectionDiv.appendChild(header);
-
-                        groupedData[mainKey][subKey].forEach(q => sectionDiv.appendChild(createQuestionElement(q)));
-                        mainContent.appendChild(sectionDiv);
-                    });
-                }
-            });
-        }
-
-        // ==========================================
-        // 6. SORU OLUŞTURUCU (OPTIMIZED)
-        // ==========================================
         function createQuestionElement(q) {
-            const div = document.createElement('div');
-            div.className = 'question-group';
-            div.id = 'wrapper-' + q.id;
-
-            if (q.baglilik && q.baglilik.parent_id) {
-                div.classList.add('hidden', 'is-child');
-            }
-
-            div.innerHTML = `<label>${q.soru_metni} <span class="q-badge">${q.id}</span></label>`;
-            if (q.soru_aciklama) div.innerHTML += `<div class="description">${q.soru_aciklama}</div>`;
-
-            let inputHTML = '';
-            const name = `q_${q.id}`;
-            const type = q.cevap_tipi;
-            const answers = q.cevap || [];
-
-            if (type === 'Metin') inputHTML = `<textarea id="${name}" rows="2"></textarea>`;
-            else if (type === 'Sayı' || type === 'Oran') inputHTML = `<input type="number" id="${name}" step="${type==='Oran'?'0.01':'1'}">`;
-            else if (type === 'Tarih') inputHTML = `<input type="date" id="${name}">`;
-            else if (type === 'URL') inputHTML = `<input type="url" id="${name}">`;
-            else if (type === 'Tekli') {
-                inputHTML = `<select id="${name}"><option value="">Seçiniz...</option>${answers.map(o=>`<option value="${o}">${o}</option>`).join('')}</select>`;
-            } else if (type === 'Çoklu') {
-                inputHTML = `<div class="checkbox-group">${answers.map(o=>`<label class="checkbox-item"><input type="checkbox" name="${name}" value="${o}">${o}</label>`).join('')}</div>`;
-            } else if (type === 'Dosya') {
-                inputHTML = `<input type="file" id="${name}">`;
-            } else inputHTML = `<input type="text" id="${name}">`;
-
-            const container = document.createElement('div');
-            container.innerHTML = inputHTML;
-            div.appendChild(container);
-
-            const inputs = div.querySelectorAll('input, select, textarea');
-            inputs.forEach(inp => {
-                // 1. Tetikleyici anlık çalışsın
-                const triggerHandler = () => checkTriggers(q.id);
-                // 2. İlerleme barı gecikmeli çalışsın (Performance)
-                const progressHandler = () => debouncedUpdateProgress();
-
-                inp.addEventListener('change', triggerHandler);
-                inp.addEventListener('change', progressHandler);
-
-                if(inp.type !== 'checkbox') {
-                    inp.addEventListener('input', triggerHandler);
-                    inp.addEventListener('input', progressHandler);
-                }
+            let d = document.createElement('div'); d.className = 'question-group'; d.id = 'w-'+q.id;
+            if(q.baglilik?.parent_id) d.classList.add('hidden', 'is-child');
+            d.innerHTML = `<label>${q.soru_metni}<span class="q-id-badge">${q.id}</span></label>`;
+            if(q.soru_aciklama) d.innerHTML += `<div class="description">${q.soru_aciklama}</div>`;
+            
+            let iH = '', n = 'q_'+q.id;
+            if(q.cevap_tipi==='Metin') iH = `<textarea id="${n}"></textarea>`;
+            else if(q.cevap_tipi==='Tekli') iH = `<select id="${n}"><option value="">Seçiniz...</option>${q.cevap.map(o=>`<option value="${o}">${o}</option>`).join('')}</select>`;
+            else if(q.cevap_tipi==='Çoklu') iH = `<div class="checkbox-group">${q.cevap.map(o=>`<label class="checkbox-item"><input type="checkbox" name="${n}" value="${o}">${o}</label>`).join('')}</div>`;
+            else iH = `<input type="${q.cevap_tipi==='Sayı'?'number':'text'}" id="${n}" step="${q.cevap_tipi==='Oran'?'0.01':'1'}">`;
+            
+            let c = document.createElement('div'); c.innerHTML = iH; d.appendChild(c);
+            d.querySelectorAll('input, select, textarea').forEach(i => {
+                i.onchange = () => { checkTriggers(q.id); updateProgress(); };
             });
-
-            return div;
-        }
-
-        // ==========================================
-        // 7. PERFORMANS VE TETİKLEYİCİLER
-        // ==========================================
-        
-        function debouncedUpdateProgress() {
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(() => {
-                updateProgress();
-            }, 300);
-        }
-
-        function updateProgress(force = false) {
-            const mainKeys = getSortedMainKeys();
-            const isMetric = (currentFramework === 'metrics');
-
-            mainKeys.forEach((mainKey, mIdx) => {
-                let mainTotal = 0, mainAnswered = 0, isMainCompleted = true;
-                const subKeys = Object.keys(groupedData[mainKey]);
-                
-                subKeys.forEach((subKey, sIdx) => {
-                    const questions = groupedData[mainKey][subKey];
-                    const subTotal = questions.length;
-                    let subAnswered = 0;
-
-                    for (let i = 0; i < subTotal; i++) {
-                        const q = questions[i];
-                        const val = getAnswerValue(q.id);
-                        if (val && (Array.isArray(val) ? val.length > 0 : val.toString().trim() !== "")) {
-                            subAnswered++;
-                        }
-                    }
-
-                    if (!isMetric) {
-                        const subBadge = document.getElementById(`badge-sub-${mIdx}-${sIdx}`);
-                        const subItem = document.getElementById(`nav-sub-${mIdx}-${sIdx}`);
-                        if (subBadge) subBadge.textContent = `${subAnswered}/${subTotal}`;
-                        
-                        if (subAnswered === subTotal && subTotal > 0) subItem.classList.add('completed');
-                        else { subItem.classList.remove('completed'); isMainCompleted = false; }
-                    }
-
-                    mainTotal += subTotal;
-                    mainAnswered += subAnswered;
-                });
-
-                if (isMetric) isMainCompleted = (mainAnswered === mainTotal && mainTotal > 0);
-
-                const mainBadge = document.getElementById(`badge-main-${mIdx}`);
-                const mainItem = document.getElementById(`nav-main-${mIdx}`);
-                if (mainBadge) mainBadge.textContent = `${mainAnswered}/${mainTotal}`;
-                
-                if (isMainCompleted && mainTotal > 0) mainItem.classList.add('completed');
-                else mainItem.classList.remove('completed');
-            });
+            return d;
         }
 
         function checkTriggers(pid) {
-            const childIds = dependencies[pid];
-            if (!childIds) return;
-            const pVal = getAnswerValue(pid);
-
-            childIds.forEach(cid => {
-                const el = document.getElementById('wrapper-' + cid);
+            let val = getAnswerValue(pid);
+            (dependencies[pid] || []).forEach(cid => {
+                let q = questionMap[cid], el = document.getElementById('w-'+cid);
                 if (!el) return;
-                
-                const q = questionMap[cid];
-                if (!q) return;
-
-                const trig = q.baglilik.tetikleyici || [];
-                let show = false;
-                if (trig.length && pVal) {
-                    if (Array.isArray(pVal)) show = pVal.some(v => trig.includes(v));
-                    else show = trig.includes(pVal);
-                }
-                
-                if (show) el.classList.remove('hidden');
-                else el.classList.add('hidden');
+                let show = val && q.baglilik.tetikleyici.some(t => Array.isArray(val) ? val.includes(t) : val === t);
+                el.classList.toggle('hidden', !show);
+                if(!show) resetChildren(cid);
             });
         }
+
+        function resetChildren(pid) { (dependencies[pid] || []).forEach(cid => { document.getElementById('w-'+cid)?.classList.add('hidden'); resetChildren(cid); }); }
 
         function getAnswerValue(id) {
-            const q = questionMap[id];
-            if (!q) return null;
-            
-            if (q.cevap_tipi === 'Çoklu') {
-                const checked = document.querySelectorAll(`input[name="q_${id}"]:checked`);
-                if (checked.length === 0) return null;
-                const vals = [];
-                for(let i=0; i<checked.length; i++) vals.push(checked[i].value);
-                return vals;
-            } 
-            
-            const el = document.getElementById(`q_${id}`);
-            return el ? el.value : null;
+            let q = questionMap[id]; if(!q) return null;
+            if(q.cevap_tipi==='Çoklu') return Array.from(document.querySelectorAll(`input[name="q_${id}"]:checked`)).map(c=>c.value);
+            return document.getElementById('q_'+id)?.value;
         }
 
-        // ==========================================
-        // 8. IMPORT / EXPORT (DÜZELTİLDİ)
-        // ==========================================
+        function updateProgress() {
+            Object.keys(groupedData).forEach((mK, mIdx) => {
+                let mT = 0, mA = 0;
+                Object.keys(groupedData[mK]).forEach((sK, sIdx) => {
+                    let qs = groupedData[mK][sK], sT = qs.length, sA = qs.filter(q => { let v = getAnswerValue(q.id); return v && (Array.isArray(v)?v.length>0:v.toString().trim()!==""); }).length;
+                    document.getElementById(`b-s-${mIdx}-${sIdx}`).textContent = `${sA}/${sT}`;
+                    document.getElementById(`nav-sub-${mIdx}-${sIdx}`).classList.toggle('completed', sA===sT);
+                    mT += sT; mA += sA;
+                });
+                document.getElementById(`b-m-${mIdx}`).textContent = `${mA}/${mT}`;
+                document.getElementById(`nav-main-${mIdx}`).classList.toggle('completed', mA===mT);
+            });
+        }
 
         function exportProgress() {
-            if (!userSector) { alert("Sektör seçilmedi."); return; }
-            const data = { meta: { date: new Date(), sector: userSector, framework: currentFramework }, answers: {} };
-            
-            filteredQuestions.forEach(q => {
-                const val = getAnswerValue(q.id);
-                if (val && (Array.isArray(val) ? val.length : val !== "")) data.answers[q.id] = val;
-            });
-
-            const blob = new Blob([JSON.stringify(data, null, 2)], {type: "application/json"});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `Taslak_${userSector}_${new Date().toLocaleDateString()}.json`;
-            a.click();
+            let d = { meta: { sector: userSector, fw: currentFramework }, ans: {} };
+            filteredQuestions.forEach(q => { let v = getAnswerValue(q.id); if(v && v.length!==0) d.ans[q.id] = v; });
+            let blob = new Blob([JSON.stringify(d)], {type: "application/json"});
+            let a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Taslak_${userSector}.json`; a.click();
         }
 
         function handleFileLoad(e) {
-            const f = e.target.files[0];
-            if (!f) return;
-            const r = new FileReader();
-            
-            r.onload = (ev) => {
-                try {
-                    const d = JSON.parse(ev.target.result);
-                    if (!d.meta?.sector) throw new Error("Geçersiz dosya");
-                    
-                    // 1. Önce Sektörü ayarla
-                    userSector = d.meta.sector;
-                    sectorSelect.value = userSector;
-
-                    // 2. Cevapları HAFIZAYA al (Ekran çizilmeden önce)
-                    window.pendingRestoreData = d.answers;
-
-                    // 3. Uygulamayı başlat (DOM oluşsun)
-                    // startApplication -> processData -> renderAll sırasıyla çalışır.
-                    // renderAll fonksiyonu pendingRestoreData'yı görüp dolduracaktır.
-                    startApplication(); 
-
-                    // 4. Framework farklıysa değiştir (Bu da yeniden render tetikler)
-                    if (d.meta.framework && d.meta.framework !== currentFramework) {
-                        switchFramework(d.meta.framework);
-                    }
-                    
-                    alert("Taslak başarıyla yüklendi!");
-
-                } catch(err) { alert("Hata: " + err.message); }
-            };
-            r.readAsText(f);
-            e.target.value = '';
+            let f = e.target.files[0]; if(!f) return;
+            let r = new FileReader(); r.onload = (ev) => {
+                let d = JSON.parse(ev.target.result);
+                userSector = d.meta.sector; document.getElementById('sectorSelect').value = userSector;
+                startApplication(); window.pRestore = d.ans;
+                if(d.meta.fw) switchFramework(d.meta.fw);
+            }; r.readAsText(f);
         }
 
         function restoreAnswers(ans) {
-            Object.keys(ans).forEach(qid => {
-                const val = ans[qid];
-                const q = questionMap[qid];
-                if (!q) return;
-                
-                if (q.cevap_tipi === 'Çoklu' && Array.isArray(val)) {
-                    val.forEach(v => {
-                        const cb = document.querySelector(`input[name="q_${qid}"][value="${v}"]`);
-                        if(cb) cb.checked = true;
-                    });
-                } else {
-                    const el = document.getElementById(`q_${qid}`);
-                    if(el) el.value = val;
-                }
-                checkTriggers(qid);
+            Object.keys(ans).forEach(id => {
+                let q = questionMap[id], v = ans[id]; if(!q) return;
+                if(q.cevap_tipi==='Çoklu') v.forEach(x => { let c = document.querySelector(`input[name="q_${id}"][value="${x}"]`); if(c) c.checked = true; });
+                else { let el = document.getElementById('q_'+id); if(el) el.value = v; }
+                checkTriggers(id);
             });
-            updateProgress(true); // Yüklemede tam güç güncelle
+            updateProgress();
         }
-
     </script>
 </body>
 </html>
